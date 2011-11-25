@@ -169,7 +169,8 @@
     [self.history addObject: sender.currentTitle];
     
     self.auxillaryDisplay.text = 
-    [[self.history componentsJoinedByString:@" "]stringByAppendingString:@" ="]; }
+    [[self.history componentsJoinedByString:@" "]stringByAppendingString:@" ="]; 
+}
 
 - (void)viewDidUnload 
 {
