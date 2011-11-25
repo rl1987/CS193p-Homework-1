@@ -19,7 +19,7 @@
 @synthesize brain = _brain;
 @synthesize history = _history;
 
-#define kHistoryCapacity 10 // We're only allowing a limited number of histoy 
+#define kHistoryCapacity 10 // We're only allowing a limited number of history 
                             // items to be remembered.
 
 - (CalculatorBrain *)brain
@@ -72,8 +72,8 @@
     self.userIsInTheMiddleOfTypingANumber = NO;
     self.userIsTypingFloatingPointNumber = NO;
     
-    // TODO: NSAssert - history masyve *negali* buti *daugiau* elementu nei 
-    // nurodyta konstantoje.
+    NSAssert(self.history.count <= kHistoryCapacity,
+             @"ERROR: Too much history elements");
     
     if (self.history.count == kHistoryCapacity)
         [self.history removeObjectAtIndex:0];
@@ -81,6 +81,7 @@
     [self.history addObject: self.display.text];
     
     self.auxillaryDisplay.text = [self.history componentsJoinedByString:@" "];
+
 }
 
 - (IBAction)clearPressed 
@@ -96,6 +97,59 @@
     self.userIsInTheMiddleOfTypingANumber = NO;
 }
 
+- (IBAction)plusMinusPressed:(UIButton *)sender
+{
+    if (self.userIsInTheMiddleOfTypingANumber)
+    {
+        if ([self.display.text hasPrefix:@"-"])
+            self.display.text = [self.display.text substringFromIndex:1];
+        else
+            self.display.text = 
+            [NSString stringWithFormat:@"-%@",self.display.text];
+        
+        return;
+    }
+    
+    double result = [self.brain performOperation:sender.currentTitle];
+    
+    self.display.text = [NSString stringWithFormat:@"%g",result];
+    
+    NSAssert(self.history.count <= kHistoryCapacity,
+             @"ERROR: Too much history elements");
+    
+    if (self.history.count == kHistoryCapacity)
+        [self.history removeObjectAtIndex:0];
+    
+    [self.history addObject: sender.currentTitle];
+    
+    self.auxillaryDisplay.text=[self.history componentsJoinedByString:@" "];
+    
+    self.auxillaryDisplay.text = 
+    [[self.history componentsJoinedByString:@" "]stringByAppendingString:@" ="]; 
+}
+
+- (IBAction)backSpacePressed 
+{
+    if (!userIsInTheMiddleOfTypingANumber)
+        return;
+    
+    NSInteger length = self.display.text.length;
+    
+    if (length > 1)
+    {
+        if ([[self.display.text substringFromIndex:length-1] 
+             isEqualToString:@"."])
+            self.userIsTypingFloatingPointNumber = NO;
+        
+        self.display.text = [self.display.text substringToIndex: length-1];
+    }
+    else
+    {
+        self.display.text = @"0";
+        self.userIsInTheMiddleOfTypingANumber = NO;
+    }
+}
+
 - (IBAction)operationPressed:(UIButton *)sender 
 {
     if (self.userIsInTheMiddleOfTypingANumber)
@@ -106,16 +160,16 @@
     
     self.display.text = [NSString stringWithFormat:@"%g",result];
     
-    // TODO: NSAssert - history masyve *negali* buti *daugiau* elementu nei 
-    // nurodyta konstantoje.
+    NSAssert(self.history.count <= kHistoryCapacity,
+             @"ERROR: Too much history elements");
     
     if (self.history.count == kHistoryCapacity)
         [self.history removeObjectAtIndex:0];
     
     [self.history addObject: sender.currentTitle];
     
-    self.auxillaryDisplay.text = [self.history componentsJoinedByString:@" "];
-}
+    self.auxillaryDisplay.text = 
+    [[self.history componentsJoinedByString:@" "]stringByAppendingString:@" ="]; }
 
 - (void)viewDidUnload 
 {
